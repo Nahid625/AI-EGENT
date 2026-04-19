@@ -17,9 +17,14 @@ from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain.agents import create_agent
 
-from 
+from fastapi import APIRouter,str
 
-router = 
+app = APIRouter()
+
+app.post('/quistion',qs : str)
+
+
+r
 
 load_dotenv()
 
