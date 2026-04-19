@@ -17,6 +17,10 @@ from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain.agents import create_agent
 
+from 
+
+router = 
+
 load_dotenv()
 
 @tool
@@ -29,7 +33,7 @@ def get_weather(location: str) -> str:
     
     api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
-    
+
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -50,8 +54,9 @@ agent = create_agent(llm, tools=tools)
 
 print("--- Calling the Agent ---")
 # Be very specific in the prompt to trigger the tool
-query = "What is the exact current temperature in Rangpur? Use your weather tool."
+query = "What is the exact current temperature in Dhaka? Use your weather tool."
 response = agent.invoke({"messages": [("user", query)]})
 
 print("\n--- Final Answer ---")
 print(response["messages"][-1].content)
+print(response)
