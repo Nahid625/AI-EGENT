@@ -17,9 +17,9 @@ from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain.agents import create_agent
 from src.models.models  import QuestionResponse,QuestionRequest
-from fastapi import APIRouter,str,HTTPException
+from fastapi import FastAPI,HTTPException
 
-app = APIRouter()
+app = FastAPI()
 
 
 
@@ -49,40 +49,44 @@ def get_weather(location: str) -> str:
         return f"Connection Error: {e}"
 
 # Use a slightly higher temperature (0.1) so it's not too stiff
-llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
-tools = [get_weather]
-agent = create_agent(llm, tools=tools)
+# llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
+# tools = [get_weather]
+# agent = create_agent(llm, tools=tools)
 
-print("--- Calling the Agent ---")
-# Be very specific in the prompt to trigger the tool
-query = "What is the exact current temperature in Dhaka? Use your weather tool."
-response = agent.invoke({"messages": [("user", query)]})
+# print("--- Calling the Agent ---")
+# # Be very specific in the prompt to trigger the tool
+# query = "What is the exact current temperature in Dhaka? Use your weather tool."
+# response = agent.invoke({"messages": [("user", query)]})
 
-print("\n--- Final Answer ---")
-print(response["messages"][-1].content)
-print(response)
+# print("\n--- Final Answer ---")
+# print(response["messages"][-1].content)
+# print(response)
 
 @app.post("/question",response_model= QuestionResponse)
-def ask_question(question: str ,data = QuestionRequest ):
+def ask_question(question: str):
 
     try:
-        get_weather(data.question)
-
         llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
         tools = [get_weather]
         agent = create_agent(llm, tools=tools)
 
         print("--- Calling the Agent ---")
 # Be very specific in the prompt to trigger the tool
-        query = "What is the exact current temperature in Dhaka? Use your weather tool."
+        query = question
         response = agent.invoke({"messages": [("user", query)]})
-               
+        
         print("\n--- Final Answer ---")
         print(response["messages"][-1].content)
-        print(response)
+        # This extracts just the final text answer from the agent
+        # Replace your current return statement with this:
+        return {
+    "yourQuistion": question, 
+    "response": response["messages"][-1].content
+}
     except Exception as e :
         raise HTTPException(status_code=500,detail= f"error is this {str(e)}")
 
-    
-    return {"message": question}
  
+@app.get("/")
+def home():
+    return {"message": "API is working"}
