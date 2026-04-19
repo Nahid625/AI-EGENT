@@ -16,15 +16,12 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain.agents import create_agent
-
+from src.models.models  import QuestionResponse
 from fastapi import APIRouter,str
 
 app = APIRouter()
 
-app.post('/quistion',qs : str)
 
-
-r
 
 load_dotenv()
 
@@ -65,3 +62,8 @@ response = agent.invoke({"messages": [("user", query)]})
 print("\n--- Final Answer ---")
 print(response["messages"][-1].content)
 print(response)
+
+@app.post("/question",response_model= QuestionResponse)
+def ask_question(question: str , ):
+    
+    return {"message": question}
