@@ -16,8 +16,8 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain.agents import create_agent
-from src.models.models  import QuestionResponse
-from fastapi import APIRouter,str
+from src.models.models  import QuestionResponse,QuestionRequest
+from fastapi import APIRouter,str,HTTPException
 
 app = APIRouter()
 
@@ -50,7 +50,6 @@ def get_weather(location: str) -> str:
 
 # Use a slightly higher temperature (0.1) so it's not too stiff
 llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
-
 tools = [get_weather]
 agent = create_agent(llm, tools=tools)
 
@@ -64,6 +63,26 @@ print(response["messages"][-1].content)
 print(response)
 
 @app.post("/question",response_model= QuestionResponse)
-def ask_question(question: str , ):
+def ask_question(question: str ,data = QuestionRequest ):
+
+    try:
+        get_weather(data.question)
+
+        llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
+        tools = [get_weather]
+        agent = create_agent(llm, tools=tools)
+
+        print("--- Calling the Agent ---")
+# Be very specific in the prompt to trigger the tool
+        query = "What is the exact current temperature in Dhaka? Use your weather tool."
+        response = agent.invoke({"messages": [("user", query)]})
+               
+        print("\n--- Final Answer ---")
+        print(response["messages"][-1].content)
+        print(response)
+    except Exception as e :
+        raise HTTPException(status_code=500,detail= f"error is this {str(e)}")
+
     
     return {"message": question}
+ 
