@@ -8,10 +8,10 @@ def ask_question(question: str):
     try:
         llm = ChatGroq(
                        model="llama-3.3-70b-versatile",
-                       temperature=0.7,
+                       temperature=0.8,
                        timeout=30,
                        max_tokens=1000,
-                       max_retries=6,  # Default; increase for unreliable networks
+                       max_retries=8,  # Default; increase for unreliable networks
                        )
         tools = [get_weather]
         agent = create_agent(llm, tools=tools)
