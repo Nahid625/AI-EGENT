@@ -1,21 +1,18 @@
 import os
-
+import requests  # ✅ standard library
 from langchain.tools import tool
-from langchain_classic import requests
-
 
 @tool
 def get_weather(location: str) -> str:
-    """Use this tool ONLY to get the current weather or temperature for a specific city. 
+    """Use this tool ONLY to get the current weather or temperature for a specific city.
      Input should be a city name (e.g., 'Dhaka')."""
-    # This print will show up in your terminal if the AI actually uses the tool
     print(f"--- TOOL LOG: Fetching real data for {location} ---")
     
     api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url)  # ✅ standard requests
         if response.status_code == 200:
             data = response.json()
             temp = data['main']['temp']

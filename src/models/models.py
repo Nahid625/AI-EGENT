@@ -5,4 +5,5 @@ class QuestionResponse(BaseModel):
     response: str
     
 class QuestionRequest(BaseModel):
-    question: str 
+    question: str
+   
