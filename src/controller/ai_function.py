@@ -16,13 +16,20 @@ def ask_question(question: str):
         )
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are a helpful AI agent. You HAVE tools to look up real-time info. "
-                       "If you don't know something, or need the current time/weather, USE A TOOL."),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
+    ("system", """You are a helpful AI assistant with access to tools.
 
-        # ✅ No more SerpAPI — DuckDuckGo is free and works great
+ONLY use tools when the user asks for:
+- Real-time weather
+- Current date or time
+- Latest news or recent events
+- Anything that requires up-to-date information
+
+For general knowledge questions (history, math, coding, explanations, etc.),
+answer directly from your own knowledge WITHOUT using any tools."""),
+    ("human", "{input}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
+])
+
         search_tool = DuckDuckGoSearchRun()
         tools = [search_tool, get_weather]
 
