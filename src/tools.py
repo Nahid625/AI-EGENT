@@ -6,9 +6,8 @@ from langchain_classic import requests
 
 @tool
 def get_weather(location: str) -> str:
-    """USE THIS TOOL EVERY TIME the user asks about weather or temperature. 
-    This tool fetches LIVE data from the internet for a specific city."""
-    
+    """Use this tool ONLY to get the current weather or temperature for a specific city. 
+     Input should be a city name (e.g., 'Dhaka')."""
     # This print will show up in your terminal if the AI actually uses the tool
     print(f"--- TOOL LOG: Fetching real data for {location} ---")
     
