@@ -16,16 +16,7 @@ def ask_question(question: str):
         )
 
         prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a helpful AI assistant with access to tools.
-
-ONLY use tools when the user asks for:
-- Real-time weather
-- Current date or time
-- Latest news or recent events
-- Anything that requires up-to-date information
-
-For general knowledge questions (history, math, coding, explanations, etc.),
-answer directly from your own knowledge WITHOUT using any tools."""),
+    ("system", "You are a helpful assistant. Use tools to look up real-time information like current things current age current time or other live dettails if use need current news without this type of quistion dont use tools just user normal lmm to give them ans when necessary."),
     ("human", "{input}"),
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
