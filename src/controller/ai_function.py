@@ -3,9 +3,8 @@ from fastapi import HTTPException
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.tools import DuckDuckGoSearchRun  
-
 from src.tools import get_weather
-
+from src.tools.realtime_tool import display_realtime_info
 
 def ask_question(question: str):
     try:
@@ -16,13 +15,13 @@ def ask_question(question: str):
         )
 
         prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant. Use tools to look up real-time information like current things current age current time or other live dettails if use need current news without this type of quistion dont use tools just user normal lmm to give them ans when necessary."),
-    ("human", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
-])
+            ("system", "You are a helpful assistant. Use tools to look up real-time information like current things current age current time or other live dettails if use need current news without this type of quistion dont use tools just user normal lmm to give them ans when necessary."),
+            ("human", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
+        ])
 
         search_tool = DuckDuckGoSearchRun()
-        tools = [search_tool, get_weather]
+        tools = [search_tool, get_weather, display_realtime_info]
 
         agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
 
