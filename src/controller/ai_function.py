@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.tools import DuckDuckGoSearchRun  
-from src.tools import get_weather
-from src.tools.realtime_tool import display_realtime_info
+from src.tools import get_weather,gettime
+
 
 def ask_question(question: str):
     try:
@@ -21,7 +21,7 @@ def ask_question(question: str):
         ])
 
         search_tool = DuckDuckGoSearchRun()
-        tools = [search_tool, get_weather, display_realtime_info]
+        tools = [search_tool, get_weather, gettime]
 
         agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
 
