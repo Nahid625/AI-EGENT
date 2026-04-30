@@ -1,11 +1,10 @@
+from pytz import all_timezones
+from datetime import datetime
 import pytz
-from src.timezon import all_timezones
 
-def display_realtime_info():
-    for tz in all_timezones:
-        print(f"Time zone: {tz}")
-        print(f"Current time: {pytz.timezone(tz).localize(pytz.datetime.now())}")
-        print("-------------------------------")
-
-
-display_realtime_info()
+def gettime(timezone: str = "UTC") -> str:
+    if timezone not in all_timezones:
+        return f"Invalid timezone. Example: 'Asia/Dhaka', 'America/New_York'"
+    tz = pytz.timezone(timezone)
+    current_time = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
+    return f"Current time in {timezone} is {current_time}"
