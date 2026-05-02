@@ -32,6 +32,7 @@ def signup(user_data: UserReqwest, db: Session = Depends(get_db)):
     new_user = User(
         email=user_data.email,
         hashed_password=hashed_pw
+        firstname=user_data.firs
     )
     
     db.add(new_user)
