@@ -1,8 +1,8 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.config.db import get_db
-from src.models.models import UserRequest
-from src.helper import hash_pass, access_token 
+from src.models.models import LoginRequest, UserRequest
+from src.helper import hash_pass, access_token, verify_pass 
 from src.schemas.schema import User
 from datetime import datetime
 
@@ -55,4 +55,39 @@ def signup(user_data: UserRequest, db: Session = Depends(get_db)):
 
 # user login function 
 
-# def login(user_data : )
+def login(user_data: LoginRequest, db: Session = Depends(get_db)):
+    # 1. Find the user
+    user = db.query(User).filter(User.email == user_data.email).first()
+    
+    # 2. Check existence
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User does not exist"
+        )
+    
+    # 3. Verify password
+    matchpass = verify_pass(user_data.password, user.hashed_password)
+    
+    if not matchpass:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password"
+        )
+
+    # 4. Generate token - passing data as a dictionary
+    token = access_token({
+        "id": user.id,
+        "email": user.email
+    })
+
+    # 5. Final Return
+    return {
+        "message": "Login successful",
+        "user": {
+            "email": user.email,
+            "firstname": user.firstname,
+            "lastname": user.lastname
+        },
+        "token": token
+    }

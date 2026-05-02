@@ -16,6 +16,11 @@ class UserRequest(BaseModel):
     hashed_password : str
     created_at : datetime
 
+# login
+class LoginRequest(BaseModel):
+    email : str 
+    password : str
+
 class SignupResponse(BaseModel):
      message : str
      user : dict
