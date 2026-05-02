@@ -18,7 +18,7 @@ def signup(user_data: UserReqwest, db: Session = Depends(get_db)):
         )
     
     # 2. Validation
-    if len(user_data.password) < 8:
+    if len(user_data.hashed_password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Password must be at least 8 characters"
@@ -26,7 +26,7 @@ def signup(user_data: UserReqwest, db: Session = Depends(get_db)):
     
     # 3. Hash the password before saving
     # Assuming hash_pass is your utility function using passlib or bcrypt
-    hashed_pw = hash_pass(user_data.password)
+    hashed_pw = hash_pass(user_data.hashed_password)
 
     # 4. Create and Save
     new_user = User(
