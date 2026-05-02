@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from config.db import get_db
-from models.models import UserReqwest
-from helper import hash_pass, access_token 
-from schemas.schema import User
+from src.config.db import get_db
+from src.models.models import UserReqwest
+from src.helper import hash_pass, access_token 
+from src.schemas.schema import User
 
 from fastapi import HTTPException, Depends, status
 from sqlalchemy.orm import Session
