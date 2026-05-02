@@ -51,3 +51,8 @@ def signup(user_data: UserRequest, db: Session = Depends(get_db)):
             "email": new_user.email
         }
     }
+
+
+# user login function 
+
+# def login(user_data : )
