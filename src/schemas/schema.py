@@ -3,9 +3,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, DateTime, ForeignKey, func
 from datetime import datetime
 import uuid
+from src.config.db import Base
 
-class Base(DeclarativeBase):
-    pass
 
 # ─── USER ───────────────────────────────────────────
 class User(Base):
