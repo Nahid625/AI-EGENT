@@ -9,7 +9,7 @@ class QuestionResponse(BaseModel):
 class QuestionRequest(BaseModel):
     question: str
 
-class UserReqwest(BaseModel):
+class UserRequest(BaseModel):
     firstname : str
     lastname: str
     email : str 

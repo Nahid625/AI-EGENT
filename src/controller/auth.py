@@ -1,14 +1,15 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.config.db import get_db
-from src.models.models import UserReqwest
+from src.models.models import UserRequest
 from src.helper import hash_pass, access_token 
 from src.schemas.schema import User
+from datetime import datetime
 
 from fastapi import HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
-def signup(user_data: UserReqwest, db: Session = Depends(get_db)):
+def signup(user_data: UserRequest, db: Session = Depends(get_db)):
     # 1. Check if user exists
     user_exists = db.query(User).filter(User.email == user_data.email).first()
     if user_exists:
@@ -31,9 +32,12 @@ def signup(user_data: UserReqwest, db: Session = Depends(get_db)):
     # 4. Create and Save
     new_user = User(
         email=user_data.email,
-        hashed_password=hashed_pw
-        firstname=user_data.firs
+        hashed_password=hashed_pw,
+        firstname = user_data.firstname,
+        lastname = user_data.lastname,
+        created_at = datetime.now()
     )
+    
     
     db.add(new_user)
     db.commit()
