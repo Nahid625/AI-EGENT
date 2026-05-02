@@ -1,5 +1,7 @@
 from pydantic import BaseModel 
 from datetime import datetime
+
+
 class QuestionResponse(BaseModel):
     yourQuistion : str
     response: str
@@ -13,3 +15,8 @@ class UserReqwest(BaseModel):
     email : str 
     hashed_password : str
     created_at : datetime
+
+class SignupResponse(BaseModel):
+     message : str
+     user : dict
+     
