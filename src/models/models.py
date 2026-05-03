@@ -24,4 +24,35 @@ class LoginRequest(BaseModel):
 class SignupResponse(BaseModel):
      message : str
      user : dict
-     
+
+
+
+
+from typing import Optional
+from datetime import datetime
+
+# ── Message ──────────────────────────────────────────
+class MessageCreate(BaseModel):
+    content: str
+    image_url: Optional[str] = None
+
+class MessageOut(BaseModel):
+    id: str
+    role: str                  # "user" | "assistant"
+    content: str
+    image_url: Optional[str]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+# ── Chat Session ─────────────────────────────────────
+class ChatSessionCreate(BaseModel):
+    title: Optional[str] = None   # if None, auto-generate from first message
+
+class ChatSessionOut(BaseModel):
+    id: str
+    title: Optional[str]
+    created_at: datetime
+    messages: list[MessageOut] = []
+
+    model_config = {"from_attributes": True}
