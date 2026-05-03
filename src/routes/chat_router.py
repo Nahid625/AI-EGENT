@@ -5,7 +5,7 @@ from services.chat_Services import create_session, delete_session, get_session_w
 from src.config.db import get_db
 
 
-router = APIRouter(prefix="/chat", tags=["Chat"])
+router = APIRouter(prefix="/chat Prefix", tags=["Chat"])
 
 # POST /chat/sessions → start a new session
 @router.post("/sessions", response_model=ChatSessionOut)
