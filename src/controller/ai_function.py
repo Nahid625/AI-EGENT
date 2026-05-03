@@ -41,3 +41,5 @@ def ask_question(question: str):
     except Exception as e:
         print(f"error is this {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+
