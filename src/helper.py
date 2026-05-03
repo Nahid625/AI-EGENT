@@ -19,7 +19,9 @@ def hash_pass(plain_password: str):
 def verify_pass(plain_password: str, hashed_password: str):
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+# Use a fallback if the .env isn't found
 SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 
 def access_token(data :dict):
