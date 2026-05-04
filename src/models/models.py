@@ -34,7 +34,7 @@ from datetime import datetime
 # ── Message ──────────────────────────────────────────
 class MessageCreate(BaseModel):
     content: str
-    image_url: Optional[str] = None
+    # image_url: Optional[File] = None
 
 class MessageOut(BaseModel):
     id: str

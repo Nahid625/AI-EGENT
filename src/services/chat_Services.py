@@ -1,8 +1,13 @@
 from sqlalchemy.orm import Session
+from src.controller.ai_function import ask_question
 from src.schemas.schema import ChatSession, Message
 import uuid
 
-def create_session(db: Session, user_id: str, title: str | None = None) -> ChatSession:
+def get_or_create_session(db: Session, user_id: str, first_message: str) -> ChatSession:
+    """Generate a short 5-7 word title for a chat that starts with this question. Return ONLY the title, no quotes, no explanation."""
+    # Take first 60 chars of question as title (AI-style auto title)
+    title = first_message.strip()[:60] + ("..." if len(first_message) > 60 else "")
+    
     session = ChatSession(
         id=str(uuid.uuid4()),
         user_id=user_id,
@@ -12,6 +17,7 @@ def create_session(db: Session, user_id: str, title: str | None = None) -> ChatS
     db.commit()
     db.refresh(session)
     return session
+
 
 def get_user_sessions(db: Session, user_id: str) -> list[ChatSession]:
     return db.query(ChatSession).filter(ChatSession.user_id == user_id).all()
@@ -43,3 +49,8 @@ def delete_session(db: Session, session_id: str, user_id: str) -> bool:
     db.delete(session)
     db.commit()
     return True
+
+
+def generate_title(question: str) -> str:
+    prompt = f"Generate a short 5-7 word title for a chat that starts with this question. Return ONLY the title, no quotes, no explanation:\n\n{question}"
+    return ask_question(question=prompt).strip()
