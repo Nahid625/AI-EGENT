@@ -87,7 +87,8 @@ def login(user_data: LoginRequest, db: Session = Depends(get_db)):
         "user": {
             "email": user.email,
             "firstname": user.firstname,
-            "lastname": user.lastname
+            "lastname": user.lastname,
+            "token": token
         },
-        "token": token
+        
     }

@@ -48,3 +48,15 @@ def remove_session(
     if not ok:
         raise HTTPException(status_code=404, detail="Session not found")
     return {"detail": "Session deleted"}
+
+
+@router.delete("/sessions/delateAll/{session_id}")
+def remove_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+):
+    user_id = "temp-user-id"
+    ok = delete_session(db, session_id, user_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"detail": "Session deleted"}

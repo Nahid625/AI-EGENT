@@ -5,6 +5,7 @@ import uuid
 
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from src.helper import access_token, get_current_user
 from src.schemas.schema import ChatSession
 from src.config.db import get_db
 from src.services.chat_Services import add_message, get_or_create_session, get_session_with_messages
@@ -34,13 +35,13 @@ def quistion(quistion: str):
 
 @router.post("/ask")
 def ask(
-    content: str,                                          # ← plain form field, no body model
+    content: str =Form()    ,                                      # ← plain form field, no body model
     image: Optional[UploadFile] = File(default=None),     # ← optional file
     db: Session = Depends(get_db),
-    # current_user = Depends(get_current_user)  ← add after auth
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
-
+    user_id = current_user.id
+    print(current_user)
     # 1. Upload to Cloudinary if image provided, get back the secure_url
     image_url = None
     if image:
