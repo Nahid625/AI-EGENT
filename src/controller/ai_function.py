@@ -5,10 +5,10 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.tools import DuckDuckGoSearchRun  
 from src.tools import get_weather,gettime
 
-def ask_question(question: str) -> str:
+def ask_question(question: str) -> dict:
     try:
         llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",   # ← stable model with tool support
             temperature=0,
             timeout=30
         )
