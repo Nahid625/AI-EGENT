@@ -80,7 +80,7 @@ def get_current_user(
     token = credentials.credentials        # ← raw token string extracted from "Bearer <token>"
     payload = decodedToken(token)          # ← your existing decode function
     
-    user_id = payload.get("user_id")
+    user_id = payload.get("id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     
