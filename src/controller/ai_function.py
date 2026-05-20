@@ -1,49 +1,53 @@
-from langchain_classic.agents import AgentExecutor,create_tool_calling_agent
-from fastapi import HTTPException
 from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_community.tools import DuckDuckGoSearchRun  
-from src.tools import get_weather,gettime
+from fastapi import HTTPException
+from src.tools import get_weather, gettime
+from langchain_community.tools import DuckDuckGoSearchRun
 
 def ask_question(question: str) -> dict:
     try:
         llm = ChatGroq(
-            model="llama-3.1-8b-instant",   # ← stable model with tool support
+            model="llama-3.3-70b-versatile",
             temperature=0,
             timeout=30
         )
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a helpful assistant.
-You have access to these tools: web search, weather, and time.
+        question_lower = question.lower()
 
-STRICT RULES — follow exactly:
-- ONLY use a tool when the user asks for one of these:
-  * current time or date
-  * current weather in a location
-  * recent news or live data from the internet
-- For ALL other questions, answer directly using your own knowledge.
-- NEVER call a tool for general knowledge, math, definitions, coding, or advice.
-- If unsure whether to use a tool, do NOT use it."""),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
+        # ── Manually route to tools instead of letting agent decide ──
+        
+        # Time question
+        if any(word in question_lower for word in ["time", "clock"]):
+            # Ask LLM to extract timezone from question
+            tz_response = llm.invoke(
+                f"Extract the timezone in pytz format (like 'Asia/Dhaka', 'America/New_York') from this question. Return ONLY the timezone string, nothing else: {question}"
+            )
+            timezone = tz_response.content.strip()
+            result = gettime.invoke({"timezone": timezone})
+            return {"yourQuistion": question, "response": result}
 
-        tools = [DuckDuckGoSearchRun(), get_weather, gettime]
+        # Weather question
+        elif any(word in question_lower for word in ["weather", "temperature", "humid"]):
+            # Ask LLM to extract city name
+            city_response = llm.invoke(
+                f"Extract only the city name from this question. Return ONLY the city name, nothing else: {question}"
+            )
+            city = city_response.content.strip()
+            result = get_weather.invoke({"location": city})
+            return {"yourQuistion": question, "response": result}
 
-        agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
+        # News / live search
+        elif any(word in question_lower for word in ["news", "latest", "today", "current", "now"]):
+            search = DuckDuckGoSearchRun()
+            result = search.invoke(question)
+            # Let LLM summarize the search result
+            summary = llm.invoke(f"Based on this search result, answer the question '{question}':\n\n{result}")
+            return {"yourQuistion": question, "response": summary.content}
 
-        agent_executor = AgentExecutor(
-            agent=agent,
-            tools=tools,
-            verbose=True,
-            handle_parsing_errors=False,  # ← False so real error surfaces in logs
-            max_iterations=3              # ← prevent infinite tool call loops
-        )
-
-        response = agent_executor.invoke({"input": question})
-        return response["output"]         # ← return plain string, not a dict
+        # Everything else — direct LLM answer
+        else:
+            response = llm.invoke(question)
+            return {"yourQuistion": question, "response": response.content}
 
     except Exception as e:
-        print(f"Agent error: {str(e)}")
+        print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
