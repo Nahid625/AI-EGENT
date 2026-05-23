@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from src.helper import access_token, get_current_user
 from src.schemas.schema import ChatSession
 from src.config.db import get_db
-from src.services.chat_Services import add_message, get_or_create_session, get_session_with_messages
+from src.services.chat_Services import add_message, generate_title, get_or_create_session, get_session_with_messages
 from src.controller.ai_function import ask_question
 from src.models.models  import ChatSessionOut, MessageCreate, QuestionResponse
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, UploadFile
@@ -48,7 +48,8 @@ def ask(
         image_url = upload_to_cloudinary(image)   # returns "https://res.cloudinary.com/..."
 
     # 2. Auto-create session with question as title
-    session = get_or_create_session(db, user_id, content)
+    session = get_or_create_session(user_id, content, db)
+    title = generate_title(content)
 
     # 3. Save user message + image url
     add_message(db, session.id, role="user", content=content, image_url=image_url)
@@ -61,7 +62,7 @@ def ask(
 
     return {
         "session_id": session.id,
-        "title": session.title,
+        "title": title,
         "answer": ai_response,
         "image_url": image_url        # None if no image was sent
     }
@@ -112,7 +113,8 @@ def ask(
         image_url = upload_to_cloudinary(image)
 
     session = get_or_create_session(db, user_id, content)
-
+ 
+    # title = generate_title(session.title)
     add_message(db, session.id, role="user", content=content, image_url=image_url)
 
     ai_response = ask_question(question=content)      # ← now returns plain string

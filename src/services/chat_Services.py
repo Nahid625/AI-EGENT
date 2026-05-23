@@ -2,8 +2,8 @@ from sqlalchemy.orm import Session
 from src.controller.ai_function import ask_question
 from src.schemas.schema import ChatSession, Message
 import uuid
-
-def get_or_create_session(db: Session, user_id: str, first_message: str) -> ChatSession:
+from langchain_groq import ChatGroq
+def get_or_create_session(user_id: str, first_message: str,db: Session, ) -> ChatSession:
     """Generate a short 5-7 word title for a chat that starts with this question. Return ONLY the title, no quotes, no explanation."""
     # Take first 60 chars of question as title (AI-style auto title)
     title = first_message.strip()[:60] + ("..." if len(first_message) > 60 else "")
@@ -50,7 +50,8 @@ def delete_session(db: Session, session_id: str, user_id: str) -> bool:
     db.commit()
     return True
 
-
 def generate_title(question: str) -> str:
+    llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, timeout=30)
     prompt = f"Generate a short 5-7 word title for a chat that starts with this question. Return ONLY the title, no quotes, no explanation:\n\n{question}"
-    return ask_question(question=prompt).strip()
+    response = llm.invoke(prompt)
+    return response.content.strip()  

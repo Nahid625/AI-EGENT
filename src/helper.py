@@ -29,7 +29,7 @@ def access_token(data :dict):
     try:
       to_encode = data.copy()
      # setExpiry 
-      expire = datetime.utcnow() + timedelta(minutes=60)
+      expire = datetime.utcnow() + timedelta(weeks=5)
       to_encode.update({"exp":expire})
 
       encoded_jwt = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)

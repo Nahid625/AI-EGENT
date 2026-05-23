@@ -13,8 +13,6 @@ def ask_question(question: str) -> dict:
 
         question_lower = question.lower()
 
-       
-        
         # Time question
         if any(word in question_lower for word in ["time", "clock"]):
             # Ask LLM to extract timezone from question
@@ -38,12 +36,12 @@ def ask_question(question: str) -> dict:
             return result
 
         # News / live search
-        elif any(word in question_lower for word in ["news", "latest", "today", "current", "now"]):
+        elif any(word in question_lower for word in ["news", "latest", "today", "current", "now" ,"age" "old" "deth"]):
             search = DuckDuckGoSearchRun()
             result = search.invoke(question)
             # Let LLM summarize the search result
             summary = llm.invoke(f"Based on this search result, answer the question '{question}':\n\n{result}")
-            return {"yourQuistion": question, "response": summary.content}
+            return summary.content
 
         # Everything else — direct LLM answer
         else:
