@@ -55,7 +55,7 @@ def decodedToken(token: str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         
         # Pulling out multiple things
-        user_id = payload.get("user_id")
+        user_id = payload.get("is")
         user_email = payload.get("email")
         
         print(f"DEBUG: Found User ID {user_id} with Email {user_email}")
@@ -80,7 +80,7 @@ def get_current_user(
     token = credentials.credentials        # ← raw token string extracted from "Bearer <token>"
     payload = decodedToken(token)          # ← your existing decode function
     
-    user_id = payload.get("user_id")
+    user_id = payload.get("id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     
