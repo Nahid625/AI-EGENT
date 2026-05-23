@@ -13,7 +13,7 @@ def ask_question(question: str) -> dict:
 
         question_lower = question.lower()
 
-        # ── Manually route to tools instead of letting agent decide ──
+       
         
         # Time question
         if any(word in question_lower for word in ["time", "clock"]):
