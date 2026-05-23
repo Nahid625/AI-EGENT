@@ -23,7 +23,8 @@ def ask_question(question: str) -> dict:
             )
             timezone = tz_response.content.strip()
             result = gettime.invoke({"timezone": timezone})
-            return {"yourQuistion": question, "response": result}
+            print(result)
+            return result
 
         # Weather question
         elif any(word in question_lower for word in ["weather", "temperature", "humid"]):
@@ -33,7 +34,8 @@ def ask_question(question: str) -> dict:
             )
             city = city_response.content.strip()
             result = get_weather.invoke({"location": city})
-            return {"yourQuistion": question, "response": result}
+            print(f"result : ${result}")
+            return result
 
         # News / live search
         elif any(word in question_lower for word in ["news", "latest", "today", "current", "now"]):
@@ -46,8 +48,7 @@ def ask_question(question: str) -> dict:
         # Everything else — direct LLM answer
         else:
             response = llm.invoke(question)
-            return {"yourQuistion": question, "response": response.content}
-
+            return response.content   
     except Exception as e:
         print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
