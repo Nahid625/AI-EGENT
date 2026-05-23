@@ -11,6 +11,7 @@ def get_weather(location: str) -> str:
     api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
     try:
+      
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
