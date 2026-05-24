@@ -15,6 +15,7 @@ def ask_question(question: str) -> dict:
 
        
         
+        
         # Time question
         if any(word in question_lower for word in ["time", "clock"]):
             # Ask LLM to extract timezone from question
