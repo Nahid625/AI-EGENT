@@ -72,8 +72,9 @@ def ask_followup(
     session_id: str,
     body: MessageCreate,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id
 
     session = db.query(ChatSession).filter(
         ChatSession.id == session_id,
@@ -98,9 +99,9 @@ def ask_followup(
     return {
         "session_id": session_id,
         "answer": ai_response
-    }@router.post("/ask")
+    }
 
-
+@router.post("/ask")
 def ask(
     content: str = Form(...),                          # ← Form() required for multipart
     image: Optional[UploadFile] = File(default=None),
@@ -133,8 +134,9 @@ def ask_followup(
     session_id: str,
     body: MessageCreate,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id
 
     session = db.query(ChatSession).filter(
         ChatSession.id == session_id,

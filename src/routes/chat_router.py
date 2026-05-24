@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from src.helper import get_current_user
 from src.models.models import ChatSessionCreate, ChatSessionOut
 from src.services.chat_Services import get_or_create_session, delete_session, get_session_with_messages, get_user_sessions
 from src.config.db import get_db
@@ -21,8 +22,9 @@ def new_session(
 @router.get("/sessions", response_model=list[ChatSessionOut])
 def list_sessions(
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id
     return get_user_sessions(db, user_id)
 
 # GET /chat/sessions/{id} → full session with all messages (history)
