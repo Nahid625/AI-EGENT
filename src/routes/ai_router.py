@@ -9,7 +9,7 @@ from src.helper import access_token, get_current_user
 from src.schemas.schema import ChatSession
 from src.config.db import get_db
 from src.services.chat_Services import add_message, generate_title, get_or_create_session, get_session_with_messages
-from src.controller.ai_function import ask_question
+from src.controller.ai_function import ask_question, ask_with_image
 from src.models.models  import ChatSessionOut, MessageCreate, QuestionResponse
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, UploadFile
 
@@ -33,99 +33,38 @@ def quistion(quistion: str):
 
 
 
+
 @router.post("/ask")
 def ask(
-    content: str =Form()    ,                                      # ← plain form field, no body model
-    image: Optional[UploadFile] = File(default=None),     # ← optional file
+    content: str = Form(...),
+    image: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user) 
+    current_user = Depends(get_current_user)
 ):
     user_id = current_user.id
-    print(current_user)
-    # 1. Upload to Cloudinary if image provided, get back the secure_url
     image_url = None
-    if image:
-        image_url = upload_to_cloudinary(image)   # returns "https://res.cloudinary.com/..."
 
-    # 2. Auto-create session with question as title
+    if image and image.filename:
+        # 1. Save to Cloudinary
+        image_url = upload_to_cloudinary(image)
+
+        # 2. Reset file pointer and call vision AI
+        image.file.seek(0)                              # ← reset after cloudinary upload
+        ai_response = ask_with_image(content, image.file)  # ← vision response
+    else:
+        # 3. Normal text question
+        ai_response = ask_question(question=content)
+
+    # 4. Auto-create session
     session = get_or_create_session(user_id, content, db)
-    title = generate_title(content)
 
-    # 3. Save user message + image url
+    # 5. Save messages
     add_message(db, session.id, role="user", content=content, image_url=image_url)
-
-    # 4. Call AI
-    ai_response = ask_question(question=content)
-
-    # 5. Save assistant reply
     add_message(db, session.id, role="assistant", content=ai_response)
 
     return {
         "session_id": session.id,
-        "title": title,
-        "answer": ai_response,
-        "image_url": image_url        # None if no image was sent
-    }
-
-@router.post("/ask/{session_id}")
-def ask_followup(
-    session_id: str,
-    body: MessageCreate,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user) 
-):
-    user_id = current_user.id
-
-    session = db.query(ChatSession).filter(
-        ChatSession.id == session_id,
-        ChatSession.user_id == user_id
-    ).first()
-
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    # Save user message
-    add_message(db, session_id, role="user", content=body.content)
-
-    # Build history for context
-    history = [{"role": m.role, "content": m.content} for m in session.messages]
-
-    # Call AI with full history
-    ai_response = ask_question(question=body.content, history=history)
-
-    # Save reply
-    add_message(db, session_id, role="assistant", content=ai_response)
-
-    return {
-        "session_id": session_id,
-        "answer": ai_response
-    }
-
-@router.post("/ask")
-def ask(
-    content: str = Form(...),                          # ← Form() required for multipart
-    image: Optional[UploadFile] = File(default=None),
-    db: Session = Depends(get_db),
-):
-    user_id = "temp-user-id"
-
-    image_url = None
-    if image and image.filename:                       # ← guard against empty file
-        image_url = upload_to_cloudinary(image)
-
-    session = get_or_create_session(db, user_id, content)
- 
-    # title = generate_title(session.title)
-    add_message(db, session.id, role="user", content=content, image_url=image_url)
-
-    ai_response = ask_question(question=content)      # ← now returns plain string
-
-    add_message(db, session.id, role="assistant", content=ai_response)  # ← string ✅
-
-    return {
-        "session_id": session.id,
         "title": session.title,
-        "question": content,
         "answer": ai_response,
         "image_url": image_url
     }
@@ -133,6 +72,7 @@ def ask(
 def ask_followup(
     session_id: str,
     body: MessageCreate,
+    image: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user) 
 ):
@@ -162,3 +102,65 @@ def ask_followup(
         "session_id": session_id,
         "answer": ai_response
     }
+
+# @router.post("/ask")
+# def ask(
+#     content: str = Form(...),                          # ← Form() required for multipart
+#     image: Optional[UploadFile] = File(default=None),
+#     db: Session = Depends(get_db),
+# ):
+#     user_id = "temp-user-id"
+
+#     image_url = None
+#     if image and image.filename:                       # ← guard against empty file
+#         image_url = upload_to_cloudinary(image)
+
+#     session = get_or_create_session(db, user_id, content)
+ 
+#     # title = generate_title(session.title)
+#     add_message(db, session.id, role="user", content=content, image_url=image_url)
+
+#     ai_response = ask_question(question=content)      # ← now returns plain string
+
+#     add_message(db, session.id, role="assistant", content=ai_response)  # ← string ✅
+
+#     return {
+#         "session_id": session.id,
+#         "title": session.title,
+#         "question": content,
+#         "answer": ai_response,
+#         "image_url": image_url
+#     }
+# @router.post("/ask/{session_id}")
+# def ask_followup(
+#     session_id: str,
+#     body: MessageCreate,
+#     db: Session = Depends(get_db),
+#     current_user = Depends(get_current_user) 
+# ):
+#     user_id = current_user.id
+
+#     session = db.query(ChatSession).filter(
+#         ChatSession.id == session_id,
+#         ChatSession.user_id == user_id
+#     ).first()
+
+#     if not session:
+#         raise HTTPException(status_code=404, detail="Session not found")
+
+#     # Save user message
+#     add_message(db, session_id, role="user", content=body.content)
+
+#     # Build history for context
+#     history = [{"role": m.role, "content": m.content} for m in session.messages]
+
+#     # Call AI with full history
+#     ai_response = ask_question(question=body.content, history=history)
+
+#     # Save reply
+#     add_message(db, session_id, role="assistant", content=ai_response)
+
+#     return {
+#         "session_id": session_id,
+#         "answer": ai_response
+#     }
