@@ -2,51 +2,73 @@ from langchain_groq import ChatGroq
 from fastapi import HTTPException
 from src.tools import get_weather, gettime
 from langchain_community.tools import DuckDuckGoSearchRun
+from groq import Groq
+import base64
 
-def ask_question(question: str) -> dict:
+
+def ask_question(question: str, history: list = []) -> str:
+
     try:
-        llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
-            temperature=0,
-            timeout=30
-        )
-
+        llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, timeout=30)
         question_lower = question.lower()
 
-        # Time question
+        # build messages with history
+        messages = history + [{"role": "user", "content": question}]
+
         if any(word in question_lower for word in ["time", "clock"]):
-            # Ask LLM to extract timezone from question
-            tz_response = llm.invoke(
-                f"Extract the timezone in pytz format (like 'Asia/Dhaka', 'America/New_York') from this question. Return ONLY the timezone string, nothing else: {question}"
-            )
+            tz_response = llm.invoke(f"Extract timezone in pytz format from: {question}. Return ONLY timezone.")
             timezone = tz_response.content.strip()
-            result = gettime.invoke({"timezone": timezone})
-            print(result)
-            return result
+            return gettime.invoke({"timezone": timezone})
 
-        # Weather question
         elif any(word in question_lower for word in ["weather", "temperature", "humid"]):
-            # Ask LLM to extract city name
-            city_response = llm.invoke(
-                f"Extract only the city name from this question. Return ONLY the city name, nothing else: {question}"
-            )
+            city_response = llm.invoke(f"Extract city name from: {question}. Return ONLY city name.")
             city = city_response.content.strip()
-            result = get_weather.invoke({"location": city})
-            print(f"result : ${result}")
-            return result
+            return get_weather.invoke({"location": city})
 
-        # News / live search
-        elif any(word in question_lower for word in ["news", "latest", "today", "current", "now" ,"age" "old" "deth"]):
+        elif any(word in question_lower for word in ["news", "latest", "today", "current", "now", "age", "old", "born"]):
             search = DuckDuckGoSearchRun()
             result = search.invoke(question)
-            # Let LLM summarize the search result
-            summary = llm.invoke(f"Based on this search result, answer the question '{question}':\n\n{result}")
+            summary = llm.invoke(f"Based on this search result, answer '{question}':\n\n{result}")
             return summary.content
 
-        # Everything else — direct LLM answer
         else:
-            response = llm.invoke(question)
-            return response.content   
+            response = llm.invoke(messages)   # ← pass full history here ✅
+            return response.content
+
     except Exception as e:
         print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+groq_client = Groq()
+
+def ask_with_image(question: str, image_file) -> str:
+    try:
+        # Convert image to base64
+        image_data = base64.b64encode(image_file.read()).decode("utf-8")
+        
+        response = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",  # ← vision model
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": question
+                        }
+                    ]
+                }
+            ],
+            max_tokens=1024
+        )
+        return response.choices[0].message.content
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
