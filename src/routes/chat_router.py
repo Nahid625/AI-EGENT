@@ -13,9 +13,10 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 def new_session(
     body: ChatSessionCreate,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
     # current_user = Depends(get_current_user)  ← uncomment after auth
 ):
-    user_id = "temp-user-id"   # replace after auth
+    user_id = current_user.id  # replace after auth
     return get_or_create_session(db, user_id=user_id, title=body.title)
 
 # GET /chat/sessions → list all sessions for the user
@@ -32,8 +33,9 @@ def list_sessions(
 def get_session(
     session_id: str,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id 
     session = get_session_with_messages(db, session_id, user_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -44,8 +46,9 @@ def get_session(
 def remove_session(
     session_id: str,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id 
     ok = delete_session(db, session_id, user_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -56,8 +59,9 @@ def remove_session(
 def remove_session(
     session_id: str,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user) 
 ):
-    user_id = "temp-user-id"
+    user_id = current_user.id 
     ok = delete_session(db, session_id, user_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Session not found")
