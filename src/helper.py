@@ -29,7 +29,7 @@ def access_token(data :dict):
     try:
       to_encode = data.copy()
      # setExpiry 
-      expire = datetime.utcnow() + timedelta(minutes=60)
+      expire = datetime.utcnow() + timedelta(weeks=5)
       to_encode.update({"exp":expire})
 
       encoded_jwt = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
@@ -55,7 +55,7 @@ def decodedToken(token: str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         
         # Pulling out multiple things
-        user_id = payload.get("user_id")
+        user_id = payload.get("is")
         user_email = payload.get("email")
         
         print(f"DEBUG: Found User ID {user_id} with Email {user_email}")
