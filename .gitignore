@@ -1,6 +1,26 @@
-venv
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+.venv-1/
+venv/
+env/
+ENV/
+
+# Environment / secrets
 .env
-__pycache__
-.git
-.gitignore
-*.pyc
+.env.*
+!.env.example
+
+# IDE / editor
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
